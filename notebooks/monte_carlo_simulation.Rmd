@@ -1,0 +1,200 @@
+---
+title: "Monte Carlo Sampling"
+author: Leah Ung
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Problem 1: Evaluate integrals using Monte Carlo simulations
+### Part a: Evaluate the integral
+$$\int_{0}^{1} \left(3-x^{7} \right)^{\frac{3}{2}}\,dx = 4.88643 $$ 
+Since the integral bounds are 0 to 1, we choose to simulate Uniform distribution U(0,1). 
+Therefore $$f(x) = \frac{1}{1-0} = 1 $$ 
+$$h(x) = \left(3-x^{7} \right)^{\frac{3}{2}}$$
+
+```{r}
+h = function(x) {(3-x^7)^(3/2)}  # function h(x)
+x1 = runif(100, 0 ,1)            # simulate uniform rvs when n = 100
+x2 = runif(1000, 0 ,1)           # simulate uniform rvs when n = 1000
+x3 = runif(10000, 0 ,1)          # simulate uniform rvs when n = 10000
+y1 = h(x1)                       # evaluate the value of h(x) when n = 100
+y2 = h(x2)                       # evaluate the value of h(x) when n = 1000
+y3 = h(x3)                       # evaluate the value of h(x) when n = 10000
+mean(y1)                         # integral value for n = 100
+mean(y2)                         # integral value for n = 1000
+mean(y3)                         # integral value for n = 10000
+```
+
+We can conclude that the estimate 4.886204 when sampling n=10000 is more accurate and is close to the true value 4.88643.
+
+
+
+### Part b: Evaluate the integral
+$$
+\int_{0}^{\infty} x\left(2+x^{5}\right)^{-4} dx = 0.0226652
+$$
+Since the integral has an infinite upper bound, and the integral function has the form of x, we choose to simulate Gamma random variables $X \sim {Gamma}(r = 2, \lambda = 1)$
+Therefore we arrive at $$f(x) = xe^{-x}$$ $$h(x) = (2 + x^{5})^{-4}e^{x}$$
+
+```{r}
+h = function(x) {exp(x)*(2+x^5)^(-4)}          # function h(x)                   
+x1 = rgamma(n = 100, shape = 2, rate = 1)      # simulate gamma rvs when n = 100
+x2 = rgamma(n = 1000, shape = 2, rate = 1)     # simulate gamma rvs when n = 1000
+x3 = rgamma(n = 10000, shape =2, rate = 1)     # simulate gamma rvs when n = 10000
+y1 = h(x1)                    # evaluate the value of h(x) when n = 100
+y2 = h(x2)                    # evaluate the value of h(x) when n = 1000
+y3 = h(x3)                    # evaluate the value of h(x) when n = 10000
+mean(y1)                      # integral value for n = 100
+mean(y2)                      # integral value for n = 1000
+mean(y3)                      # integral value for n = 10000
+```
+
+The estimated result 0.02288478 is quite close to the exact value of the integral which is 0.0226652
+
+
+### Part c: Evaluate the integral
+$$\int_{0.5}^{\infty} 4x\left(2+2x^{3}\right)^{-4} dx $$ $$= \int_{0.5}^{\infty} \frac{x}{4(1+x^3)^4}\ dx = 0.0262179$$
+Since the integral is evaluating the bounds from 0.5 to $\infty$, the problem has now become:
+$$\int_{0}^{\infty} \frac{x}{4(1+x^3)^4}\ dx - \int_{0}^{0.5} \frac{x}{4(1+x^3)^4}\ dx$$
+
+
+
+In order to evaluate the first term, we also simulate Gamma variables for this problem, particularly $X \sim {Gamma}(r = 2,\ \lambda = 1)$
+Therefore we have our f(x) and h(x) as followed $$f(x) = xe^{-x}$$ $$h(x) = \frac{1}{4}(1 + x^{3})^{-4}\ e^{x}$$
+For the second term, we need to simulate another Uniform distribution that is U(0, 0.5). Therefore, f(x) and h(x) are
+$$f(x) = \frac{1}{1-0.5} = 2$$ $$h(x) = \frac{x}{8\left(1+x^{3}\right)^{4}}$$
+
+```{r}
+# Simulate Gamma distribution
+h1 = function(x) {exp(x)*(1/4)*(1+x^3)^(-4)} # function h1(x)                   
+x1 = rgamma(n = 100, shape = 2, rate = 1)    # simulate gamma rvs when n = 100
+x2 = rgamma(n = 1000, shape = 2, rate = 1)   # simulate gamma rvs when n = 1000
+x3 = rgamma(n = 10000, shape =2, rate = 1)   # simulate gamma rvs when n = 10000
+
+# Simulate Uniform distribution
+h2 = function(x) {x/(8*(1+x^3)^4)}      # function h2(x)
+x4 = runif(100, 0 ,0.5)                 # simulate uniform rvs when n = 100
+x5 = runif(1000, 0 ,0.5)                # simulate uniform rvs when n = 1000
+x6 = runif(10000, 0 ,0.5)               # simulate uniform rvs when n = 10000
+
+mean(h1(x1) - h2(x4))                   # integral value for n = 100
+mean(h1(x2) - h2(x5))                   # integral value for n = 1000
+mean(h1(x3) - h2(x6))                   # integral value for n = 10000
+```
+
+The estimate is 0.02612474 and only $10^{-4}$ far from the exact value 0.0262179
+
+
+### Part d: Evaluate the integral
+$$\int_{-\infty}^{\infty} \left(4x-1\right) e^{-x^{6}-x^{2}} dx = -1.41133$$
+Since the support is from $-\infty$ to $\infty$ which can only be fall into the case of Normal distribution. Hence, we will simulate the random variables $$X \sim {N}(\mu = 0,\ \sigma^{2} = \frac{1}{2})$$
+Therefore we can derive f(x) and h(x) as followed:
+$$f(x) = \frac{1}{\sqrt{\pi}} e^{-x^2}$$ $$h(x) = \sqrt{\pi}\left( 4x-1 \right) e^{-x^6}$$
+```{r}
+h = function(x) {sqrt(pi)*(4*x-1)*exp(-x^6)}      # function h(x)
+x1 = rnorm(n = 100, mean = 0, sd = 1/sqrt(2))     # simulate normal rvs when n = 100
+x2 = rnorm(n = 1000, mean = 0, sd = 1/sqrt(2))    # simulate normal rvs when n = 1000
+x3 = rnorm(n = 10000, mean = 0, sd = 1/sqrt(2))   # simulate normal rvs when n = 1000
+mean(h(x1))                                       # integral value for n = 100
+mean(h(x2))                                       # integral value for n = 1000
+mean(h(x3))                                       # integral value for n = 10000
+
+```
+
+
+
+## Problem 2: Importance sampling method (integration case) 
+
+Calculate the probability $P(\chi_{4}^{2}>27)$
+
+```{r}
+Nsim = 10^3
+# simulate exponential rvs in the form of X+7
+y = rexp(Nsim) + 27 
+# calculate weighted importance
+weit = dchisq(y, 4) / dexp(y - 27)                                       
+plot(cumsum(weit) / 1:Nsim, type = "l",
+     main = "Graph for stability demonstration \n
+             of the importance sampling method ",
+     ylab = "Cumulative weight for probability estimation")
+# the red line represents the true mean
+abline(a = pchisq(27, 4, lower.tail = FALSE), b = 0, col = "red")        
+pchisq(27, 4, lower.tail = FALSE)       # true probability
+sum(weit)/Nsim                          # estimated probability P(X>27)
+
+```
+
+From observing the graph, we could see that the cumulative weight of probability has a tendency to converge and becomes more stable when n goes to 1000. Despite being fluctuating in the first 200 samples, the importance sampling method is still a very remarkable algorithm in terms of estimating probability in this example. 
+
+
+## Problem 3: Simulate a sample from a discrete distribution
+
+```{r}
+Nsim = 10^3
+x = c(1, 2, 3, 4, 5, 6, 7)
+p = c(0.1, 0.4, 0.25, 0, 0.2, 0, 0.05)
+cp = cumsum(p)                          # cumulative sum of the p
+u = runif(Nsim)                         # simulate uniform rvs
+sam = u
+sam[u <= cp[1]] = x[1]
+sam[u > cp[1] & u <= cp[2]] = x[2]
+sam[u > cp[2] & u <= cp[3]] = x[3]
+sam[u > cp[3] & u <= cp[4]] = x[4]
+sam[u > cp[4] & u <= cp[5]] = x[5]
+sam[u > cp[5] & u <= cp[6]] = x[6]
+sam[u > cp[6] & u <= cp[7]] = x[7]
+summary(sam)                            # summary of the sample simulation
+plot(sam, main = "Plot for the sample of 1000 random variables", ylab = "X")   
+hist(sam, breaks=c(0,1,2,3,4,5,6,7,8), 
+     main = "Histogram of simulation from a sample of size 1000 \n
+     for Discrete Random Variables",
+     xlab = "X" )
+```
+
+
+
+## Problem 4: Vendor supplies problem
+
+### Part a: What are the distributions of random variables X and Y?
+X and Y follow Binomial distribution, in fact $$X\sim Bin(n = 100,\ p = 0.03)$$ $$Y\sim Bin(n=100,\ p=0.05)$$
+
+
+### Part b: Generate a sample of size 1000 from the distributions of X and Y
+```{r}
+X = rbinom(n = 1000, size = 100, prob = 0.03)
+Y = rbinom(n = 1000, size = 100, prob = 0.05)
+x = 1:100
+y = 1:100
+plot(dbinom(x, size = 100, prob = 0.03), type = "h", 
+     main = "Binomial probability function for the number\n
+     of defective parts in the shipment from vendor A",
+     ylab = "P(X = x)", xlab = "Number of defective parts")
+plot(dbinom(y, size = 100, prob = 0.05), type = "h", 
+     main = "Binomial probability function for the number\n
+     of defective parts in the shipment from vendor B",
+     ylab = "P(Y = y)", xlab = "Number of defective parts")
+```
+
+
+
+### Part c: The probability that the total number of defective parts is less than 10 is:
+
+```{r}
+S = X + Y             #sum of the 2 binomial random variables X and Y
+length(S[S < 10])/length(S)
+```
+
+
+
+### Part d: The probability that the shipment from vendor A contains more defective parts than the shipment from vendor B is:
+
+```{r}
+D = X - Y             #difference of the 2 binomial random variables X and Y
+length(D[D > 0])/length(D)
+```
+
+
